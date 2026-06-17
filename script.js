@@ -32,6 +32,13 @@ const timerElement = document.getElementById('timer');
 const tryAgainButton = document.getElementById('try-again');
 const finalScoreElement = document.getElementById('final-score');
 
+let totalTyped = '';
+let currentCharIndex = 0;
+let errors = 0;
+let longText = generatedLongText();
+
+textContainer.textContent = longText;
+
 // Shuffle the words array
 function shuffleArray(array) {
           for (let i = array.length - 1; i > 0; i--) {
@@ -47,6 +54,46 @@ function generatedLongText() {
           return shuffledWords.join(' ');
 }
 
-let longText = generatedLongText();
+// Handle typing over the display text and scrolling
+document.addEventListener('keydown', (e) => {
+    
+    if (e.key === 'Backspace') {
+        if (totalTyped.length > 0) {
+            currentCharIndex = Math.max(currentCharIndex - 1,0);
+            totalTyped = totalTyped.slice(0, -1);
+        }
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+        totalTyped += e.key;
+        currentCharIndex ++;
+    }
 
-textContainer.textContent = longText;
+
+    const textArray = longText.split('');
+    textContainer.innerText = '';
+
+    errors = 0;
+
+    for (let i = 0; i < textArray.length; i++) {
+        const span = document.createElement('span');
+
+        if (i < totalTyped.length) {
+            if (totalTyped[i] === textArray[i]) {
+                span.classList.add('correct');
+            } else {
+                span.classList.add('error');
+                errors++;
+            }
+    }
+
+    span.textContent = textArray[i];
+    textContainer.appendChild(span);
+}
+
+// Scroll the container only after 20 characters
+    if (totalTyped.length >= 20) {
+        const scrollAmount = (totalTyped.length - 20) * 14;
+        textContainer.scrollLeft = scrollAmount;
+    }
+
+
+});

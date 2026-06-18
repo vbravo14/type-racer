@@ -36,8 +36,9 @@ let totalTyped = '';
 let currentCharIndex = 0;
 let errors = 0;
 let longText = generatedLongText();
-
-textContainer.textContent = longText;
+let timeLeft = 30;
+let timerInterval;
+let typingStarted = false;
 
 // Shuffle the words array
 function shuffleArray(array) {
@@ -54,8 +55,41 @@ function generatedLongText() {
           return shuffledWords.join(' ');
 }
 
+// Start countsdown timer
+function startTimer() {
+    if (!typingStarted) {
+        typingStarted = true;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerElement.textContent = `Time Left: ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                endTest();
+            }
+        }, 1000);
+    }
+}
+
+// End the test and diplay the final score
+function endTest() {
+    timerElement.textContent = `Time's up!`;
+    finalScoreElement.textContent = `Final WPM: ${calculateWPM()}`;
+    textContainer.style.display = 'none';
+    tryAgainButton.style.display = 'block';
+    calculateWPM();
+}
+
+// Calculate Words-per-minute with error adjustment
+function calculateWPM() {
+    const wordsTyped = totalTyped.trim().split(/\s+/).length;
+    const baseWPM = Math.round((wordsTyped / 30) * 60);
+    const adjustedWPM = Math.max(baseWPM - errors, 0);
+    return adjustedWPM;
+}
+
 // Handle typing over the display text and scrolling
 document.addEventListener('keydown', (e) => {
+    startTimer();
     
     if (e.key === 'Backspace') {
         if (totalTyped.length > 0) {
@@ -97,3 +131,46 @@ document.addEventListener('keydown', (e) => {
 
 
 });
+
+// Resest the test
+function resetTest() {
+    clearInterval(timerInterval);
+    timeLeft = 30;
+    timerElement.textContent = `Time Left: ${timeLeft}s`;
+    finalScoreElement.textContent = '';
+    textContainer.style.display = 'block';
+    tryAgainButton.style.display = 'none';
+    totalTyped = '';
+    typingStarted = false;
+    currentCharIndex = 0;
+    errors = 0;
+    textContainer.scrollLeft = 0;
+    longText = generatedLongText();
+    init();
+}
+
+// Initialiaze the test
+function init() {
+    if (isMobileDevice()) {
+        showMobileMessage();
+    } else {
+        textContainer.innerText = longText;
+    timerElement.textContent = `Time Left: ${timeLeft}s`;
+    }
+}
+
+// Try again button listener
+tryAgainButton.addEventListener('click', resetTest);
+
+// Detect if the device is mobile
+function isMobileDevice() {
+    return /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 800;
+}
+
+// Show message for mobile users
+function showMobileMessage() {
+    textContainer.textContent = 'This typing test is designed for desktop use only.';
+}
+
+// Startup
+init();

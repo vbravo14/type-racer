@@ -82,7 +82,7 @@ function endTest() {
 // Calculate Words-per-minute with error adjustment
 function calculateWPM() {
     const wordsTyped = totalTyped.trim().split(/\s+/).length;
-    const baseWPM = Math.round((wordsTyped / 30) * 30);
+    const baseWPM = Math.round((wordsTyped / 30) * 60);
     const adjustedWPM = Math.max(baseWPM - errors, 0);
     return adjustedWPM;
 }
